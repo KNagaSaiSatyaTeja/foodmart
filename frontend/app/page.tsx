@@ -1,103 +1,249 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ShoppingCart,
+  Search,
+  User,
+  Menu,
+  X,
+  Sun,
+  Moon,
+  Star,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+
+// ✅ Types
+type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  discount: number;
+  rating: number;
+  image: string;
+  inStock: boolean;
+};
+
+type User = {
+  name: string;
+  email: string;
+};
+
+type CartItem = Product & { quantity: number };
+
+const HomePage = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+    if (token && userData) {
+      setUser(JSON.parse(userData));
+    }
+
+    const savedCart = localStorage.getItem("cartItems");
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
+    }
+
+    fetchFeaturedProducts();
+  }, []);
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const res = await fetch("/api/products/featured");
+      const data = await res.json();
+      if (data.success) setFeaturedProducts(data.products);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  const handleAddToCart = (product: Product) => {
+    if (!user) {
+      toast.error("Please login to add items to cart");
+      router.push("/login");
+      return;
+    }
+
+    const updatedCart = [...cartItems];
+    const existingItem = updatedCart.find((item) => item.id === product.id);
+
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      updatedCart.push({ ...product, quantity: 1 });
+    }
+
+    setCartItems(updatedCart);
+    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+    toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setUser(null);
+    setCartItems([]);
+    toast.success("Logged out successfully");
+  };
+
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-background">
+      {/* Top Navbar */}
+      <nav className="flex items-center justify-between px-4 py-3 border-b">
+        <Link href="/" className="text-xl font-bold text-primary">
+          Food Mart
+        </Link>
+        <div className="flex gap-4 items-center">
+          <form
+            onSubmit={handleSearch}
+            className="hidden md:flex items-center border rounded px-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <Button variant="ghost" type="submit" size="icon">
+              <Search size={18} />
+            </Button>
+          </form>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
-            Read our docs
-          </a>
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          </Button>
+          <Link href="/cart" className="relative">
+            <ShoppingCart />
+            {cartItemCount > 0 && (
+              <span className="absolute top-0 right-0 text-xs bg-red-500 text-white px-1 rounded-full">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
+          {user ? (
+            <>
+              <Button onClick={handleLogout} variant="ghost" size="sm">
+                Logout
+              </Button>
+              <Link href="/profile" className="ml-2">
+                <User size={20} />
+              </Link>
+            </>
+          ) : (
+            <Link href="/login">
+              <Button size="sm">Login</Button>
+            </Link>
+          )}
+          <Button
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+          >
+            {isMenuOpen ? <X /> : <Menu />}
+          </Button>
         </div>
+      </nav>
+
+      {/* Responsive Mobile Search */}
+      {isMenuOpen && (
+        <form onSubmit={handleSearch} className="p-4 md:hidden">
+          <Input
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </form>
+      )}
+
+      {/* Main Content */}
+      <main className="px-4 py-6">
+        <h2 className="text-2xl font-semibold mb-4">Featured Products</h2>
+        {isLoading ? (
+          <p>Loading products...</p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {featuredProducts.map((product) => (
+              <Card key={product.id}>
+                <CardHeader className="p-2">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded"
+                  />
+                </CardHeader>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-lg mb-1">{product.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {product.description}
+                  </p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-primary font-bold">
+                      ${product.price}
+                    </span>
+                    <span className="line-through text-muted-foreground">
+                      ${product.originalPrice}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">-{product.discount}%</Badge>
+                    <div className="flex items-center text-yellow-500 gap-1">
+                      <Star size={16} fill="currentColor" />
+                      <span className="text-sm">{product.rating}</span>
+                    </div>
+                  </div>
+                  <Button
+                    className="mt-3 w-full"
+                    onClick={() => handleAddToCart(product)}
+                    disabled={!product.inStock}
+                  >
+                    {product.inStock ? "Add to Cart" : "Out of Stock"}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
-}
+};
+
+export default HomePage;
