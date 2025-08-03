@@ -212,17 +212,17 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-16 mb-10">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 transition-all duration-700 ease-in opacity-0 animate-fade-in-easy">
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 animate-fade-in-easy">
             Fresh Groceries
             <span
-              className="block text-primary transition-all duration-700 ease-in opacity-0 animate-fade-in-easy"
+              className="block text-primary animate-fade-in-easy"
               style={{ animationDelay: "0.2s", animationFillMode: "both" }}
             >
               Delivered Fast
             </span>
           </h1>
           <p
-            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto transition-all duration-700 ease-in opacity-0 animate-fade-in-easy"
+            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-fade-in-easy"
             style={{ animationDelay: "0.4s", animationFillMode: "both" }}
           >
             Shop the finest selection of fresh produce, dairy, snacks, and
