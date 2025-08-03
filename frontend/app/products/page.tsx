@@ -16,19 +16,31 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShoppingCart, Search, Filter, Star, ArrowLeft } from "lucide-react";
+import {
+  ShoppingCart,
+  Search,
+  Filter,
+  Star,
+  ArrowLeft,
+  Sun,
+  Moon,
+} from "lucide-react";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { dummyProducts, dummyCategories } from "@/lib/dummy-data";
 
+// Types
 interface Product {
   id: string;
   name: string;
   description: string;
-  image: string;
   price: number;
   originalPrice: number;
   discount: number;
   rating: number;
+  image: string;
   inStock: boolean;
+  category: string;
 }
 
 interface Category {
@@ -48,14 +60,15 @@ interface CartItem extends Product {
 }
 
 const ProductsPage = () => {
+  // State
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50]);
-  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
-  const [sortBy, setSortBy] = useState<string>("name");
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("name");
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
     total: 0,
@@ -63,6 +76,8 @@ const ProductsPage = () => {
   });
   const [user, setUser] = useState<any>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,74 +98,80 @@ const ProductsPage = () => {
     const searchParam = searchParams.get("search");
     if (categoryParam) setSelectedCategory(categoryParam);
     if (searchParam) setSearchTerm(searchParam);
-
-    fetchCategories();
-    fetchProducts();
   }, [searchParams]);
 
   useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, priceRange, inStockOnly, sortBy, pagination.page]);
+    // Simulate API call delay
+    const loadDummyData = async () => {
+      setIsLoading(true);
+      try {
+        // Simulate network delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/categories");
-      const data = await response.json();
-      if (data.success) {
-        setCategories(data.categories);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
+        let filteredProducts = [...dummyProducts];
 
-  const fetchProducts = async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (selectedCategory) params.append("category", selectedCategory);
-      if (searchTerm) params.append("search", searchTerm);
-      params.append("minPrice", priceRange[0].toString());
-      params.append("maxPrice", priceRange[1].toString());
-      if (inStockOnly) params.append("inStock", "true");
-      params.append("page", pagination.page.toString());
+        // Apply filters
+        if (selectedCategory) {
+          filteredProducts = filteredProducts.filter(
+            (p) => p.category === selectedCategory
+          );
+        }
+        if (searchTerm) {
+          filteredProducts = filteredProducts.filter(
+            (p) =>
+              p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              p.description.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+        if (inStockOnly) {
+          filteredProducts = filteredProducts.filter((p) => p.inStock);
+        }
 
-      const response = await fetch(`/api/products?${params}`);
-      const data = await response.json();
+        // Apply price filter
+        filteredProducts = filteredProducts.filter(
+          (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+        );
 
-      if (data.success) {
-        let sortedProducts: Product[] = [...data.products];
-
+        // Apply sorting
         switch (sortBy) {
           case "price-asc":
-            sortedProducts.sort((a, b) => a.price - b.price);
+            filteredProducts.sort((a, b) => a.price - b.price);
             break;
           case "price-desc":
-            sortedProducts.sort((a, b) => b.price - a.price);
+            filteredProducts.sort((a, b) => b.price - a.price);
             break;
           case "rating":
-            sortedProducts.sort((a, b) => b.rating - a.rating);
+            filteredProducts.sort((a, b) => b.rating - a.rating);
             break;
           case "name":
           default:
-            sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+            filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
             break;
         }
 
-        setProducts(sortedProducts);
-        setPagination(data.pagination);
+        setProducts(filteredProducts);
+        setCategories(dummyCategories);
+        setPagination({
+          page: 1,
+          total: filteredProducts.length,
+          pages: Math.ceil(filteredProducts.length / 9),
+        });
+      } catch (error) {
+        console.error("Error loading dummy data:", error);
+        toast.error("Failed to load products");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("Failed to load products");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    loadDummyData();
+  }, [selectedCategory, searchTerm, priceRange, inStockOnly, sortBy]);
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    fetchProducts();
+    // The search is now handled automatically by the useEffect that watches searchTerm
+    const searchValue = e.currentTarget.querySelector("input")?.value || "";
+    setSearchTerm(searchValue);
   };
 
   const handleAddToCart = (product: Product) => {
@@ -190,6 +211,31 @@ const ProductsPage = () => {
     priceRange[1] < 50 ||
     inStockOnly;
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const renderThemeToggle = () => {
+    if (!mounted) return null;
+
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        className="transition-transform duration-300 hover:rotate-12"
+        aria-label="Toggle theme"
+      >
+        <span className="sr-only">Toggle theme</span>
+        {theme === "dark" ? (
+          <Sun className="h-5 w-5" />
+        ) : (
+          <Moon className="h-5 w-5" />
+        )}
+      </Button>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -207,6 +253,7 @@ const ProductsPage = () => {
             </div>
 
             <div className="flex items-center space-x-4">
+              {renderThemeToggle()}
               {user && (
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/cart">
@@ -295,7 +342,9 @@ const ProductsPage = () => {
                   </label>
                   <Slider
                     value={priceRange}
-                    onValueChange={(value) => setPriceRange([value[0], value[1]])}
+                    onValueChange={(value) =>
+                      setPriceRange([value[0], value[1]])
+                    }
                     max={100}
                     min={0}
                     step={1}

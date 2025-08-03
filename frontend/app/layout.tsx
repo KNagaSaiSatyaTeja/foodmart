@@ -2,7 +2,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 
-
 export const metadata = {
   title: "Food Mart - Your Online Grocery Store",
   description:
@@ -10,9 +9,9 @@ export const metadata = {
 };
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
@@ -21,6 +20,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          suppressHydrationWarning
         >
           {children}
           <Toaster />
