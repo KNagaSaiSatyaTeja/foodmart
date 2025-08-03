@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-
+import { dummyProducts } from "@/lib/dummy-data"; // Import dummy products data
 // ✅ Types
 type Product = {
   id: string;
@@ -74,9 +74,10 @@ const HomePage = () => {
 
   const fetchFeaturedProducts = async () => {
     try {
-      const res = await fetch("/api/products/featured");
-      const data = await res.json();
-      if (data.success) setFeaturedProducts(data.products);
+      // const res = await fetch("/api/products/featured");
+      // const data = await res.json();
+      // if (data.success || res || data) setFeaturedProducts(data.products);
+       setFeaturedProducts(dummyProducts.slice(0, 4)); // Using dummy data for now
     } catch (err) {
       console.error("Error fetching products:", err);
     } finally {
