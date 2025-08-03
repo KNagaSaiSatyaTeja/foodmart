@@ -3,6 +3,16 @@
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   ShoppingCart,
   Search,
@@ -15,11 +25,6 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 
 // ✅ Types
 type Product = {
@@ -145,9 +150,20 @@ const HomePage = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => {
+              setTheme(theme === "dark" ? "light" : "dark");
+            }}
+            className="transition-transform duration-300 hover:rotate-12 focus:scale-110"
+            aria-label="Toggle theme"
           >
-            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            <span className="sr-only">Toggle theme</span>
+            <span className="inline-block transition-transform duration-300">
+              {theme === "dark" ? (
+                <Sun size={20} className="animate-spin-slow" />
+              ) : (
+                <Moon size={20} className="animate-spin-slow" />
+              )}
+            </span>
           </Button>
           <Link href="/cart" className="relative">
             <ShoppingCart />
@@ -192,6 +208,61 @@ const HomePage = () => {
           />
         </form>
       )}
+
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-16 mb-10">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 transition-all duration-700 ease-in opacity-0 animate-fade-in-easy">
+            Fresh Groceries
+            <span
+              className="block text-primary transition-all duration-700 ease-in opacity-0 animate-fade-in-easy"
+              style={{ animationDelay: "0.2s", animationFillMode: "both" }}
+            >
+              Delivered Fast
+            </span>
+          </h1>
+          <p
+            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto transition-all duration-700 ease-in opacity-0 animate-fade-in-easy"
+            style={{ animationDelay: "0.4s", animationFillMode: "both" }}
+          >
+            Shop the finest selection of fresh produce, dairy, snacks, and
+            household essentials.
+            <br />
+            Quality guaranteed, convenience delivered.
+          </p>
+          <form
+            onSubmit={handleSearch}
+            className="max-w-md mx-auto mb-8 animate-fade-in-easy"
+            style={{ animationDelay: "0.6s", animationFillMode: "both" }}
+          >
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search for products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-3"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Button
+                type="submit"
+                size="sm"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2"
+              >
+                Search
+              </Button>
+            </div>
+          </form>
+          <Button
+            size="lg"
+            asChild
+            className="animate-fade-in-easy"
+            style={{ animationDelay: "0.8s", animationFillMode: "both" }}
+          >
+            <Link href="/products">Start Shopping</Link>
+          </Button>
+        </div>
+      </section>
 
       {/* Main Content */}
       <main className="px-4 py-6">
