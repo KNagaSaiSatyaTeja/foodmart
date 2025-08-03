@@ -210,57 +210,80 @@ const HomePage = () => {
       )}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-16 mb-10">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 animate-fade-in-easy">
-            Fresh Groceries
-            <span
-              className="block text-primary animate-fade-in-easy"
-              style={{ animationDelay: "0.2s", animationFillMode: "both" }}
-            >
-              Delivered Fast
-            </span>
-          </h1>
-          <p
-            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-fade-in-easy"
-            style={{ animationDelay: "0.4s", animationFillMode: "both" }}
-          >
-            Shop the finest selection of fresh produce, dairy, snacks, and
-            household essentials.
-            <br />
-            Quality guaranteed, convenience delivered.
-          </p>
-          <form
-            onSubmit={handleSearch}
-            className="max-w-md mx-auto mb-8 animate-fade-in-easy"
-            style={{ animationDelay: "0.6s", animationFillMode: "both" }}
-          >
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Search for products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-3"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Button
-                type="submit"
-                size="sm"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2"
+      <section className="relative bg-gradient-to-b from-primary/5 via-primary/10 to-transparent py-24 mb-16 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_70%)]" />
+        <div className="container mx-auto px-4 text-center relative">
+          <div className="space-y-6 max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary animate-fade-in-easy">
+              Fresh Groceries
+              <span
+                className="block text-foreground mt-2 animate-fade-in-easy"
+                style={{
+                  animationDelay: "0.2s",
+                  animationFillMode: "both",
+                }}
               >
-                Search
+                Delivered Fast
+              </span>
+            </h1>
+            <p
+              className="text-xl text-muted-foreground/90 mx-auto max-w-2xl leading-relaxed animate-fade-in-easy"
+              style={{
+                animationDelay: "0.4s",
+                animationFillMode: "both",
+              }}
+            >
+              Experience premium quality groceries delivered to your doorstep.
+              Fresh produce, artisanal goods, and everyday essentials curated
+              just for you.
+            </p>
+
+            <form
+              onSubmit={handleSearch}
+              className="max-w-2xl mx-auto animate-fade-in-easy"
+              style={{
+                animationDelay: "0.6s",
+                animationFillMode: "both",
+              }}
+            >
+              <div className="relative group">
+                <Input
+                  type="text"
+                  placeholder="Search for products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-20 py-6 text-lg bg-background/50 backdrop-blur-sm border-primary/20 group-hover:border-primary/40 transition-colors"
+                />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90"
+                >
+                  Search
+                </Button>
+              </div>
+            </form>
+
+            <div
+              className="pt-4 animate-fade-in-easy"
+              style={{
+                animationDelay: "0.8s",
+                animationFillMode: "both",
+              }}
+            >
+              <Button
+                size="lg"
+                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                asChild
+              >
+                <Link href="/products">
+                  Browse All Products
+                  <span className="ml-2">→</span>
+                </Link>
               </Button>
             </div>
-          </form>
-          <Button
-            size="lg"
-            asChild
-            className="animate-fade-in-easy"
-            style={{ animationDelay: "0.8s", animationFillMode: "both" }}
-          >
-            <Link href="/products">Start Shopping</Link>
-          </Button>
+          </div>
         </div>
       </section>
 
@@ -272,36 +295,51 @@ const HomePage = () => {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {featuredProducts.map((product) => (
-              <Card key={product.id}>
-                <CardHeader className="p-2">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded"
-                  />
+              <Card
+                key={product.id}
+                className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50"
+              >
+                <CardHeader className="p-0">
+                  <div className="relative aspect-square overflow-hidden bg-muted/10">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {product.discount > 0 && (
+                      <Badge className="absolute top-2 right-2 bg-destructive text-destructive-foreground">
+                        {product.discount}% OFF
+                      </Badge>
+                    )}
+                  </div>
                 </CardHeader>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-1">{product.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-1">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-1">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                     {product.description}
                   </p>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-primary font-bold">
-                      ${product.price}
-                    </span>
-                    <span className="line-through text-muted-foreground">
-                      ${product.originalPrice}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">-{product.discount}%</Badge>
-                    <div className="flex items-center text-yellow-500 gap-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="space-y-1">
+                      <div className="text-lg font-bold text-primary">
+                        ${product.price}
+                      </div>
+                      {product.originalPrice > product.price && (
+                        <div className="text-sm text-muted-foreground line-through">
+                          ${product.originalPrice}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-yellow-500">
                       <Star size={16} fill="currentColor" />
-                      <span className="text-sm">{product.rating}</span>
+                      <span className="text-sm font-medium">
+                        {product.rating}
+                      </span>
                     </div>
                   </div>
                   <Button
-                    className="mt-3 w-full"
+                    className="w-full bg-primary/90 hover:bg-primary transition-colors"
                     onClick={() => handleAddToCart(product)}
                     disabled={!product.inStock}
                   >
